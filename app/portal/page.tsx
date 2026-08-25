@@ -43,10 +43,10 @@ export default async function PortalHomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-heading text-3xl font-black tracking-tight text-white">
           Hola, {user.name.split(" ")[0]}
         </h1>
-        <p className="mt-1 text-muted-foreground">
+        <p className="mt-2 text-slate-400">
           Este es el portal de {organization.name}.
           {pendingCount > 0
             ? ` Tienes ${pendingCount} ${pendingCount === 1 ? "producto" : "productos"} en proceso de activación.`
@@ -57,20 +57,20 @@ export default async function PortalHomePage() {
       </div>
 
       {quote ? (
-        <section className="rounded-2xl border border-border bg-background p-6 shadow-sm">
+        <section className="rounded-2xl border border-white/8 bg-card p-6 shadow-[0_0_30px_rgba(19,200,236,0.06)]">
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Tu inversión
           </p>
           <dl className="mt-3 grid gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-muted-foreground">Implementación</dt>
-              <dd className="text-xl font-semibold">
+              <dd className="text-xl font-semibold text-white">
                 {formatSetupTotal(quote.setupPrice, quote.isSetupFrom)}
               </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">Mensualidad</dt>
-              <dd className="text-xl font-semibold">
+              <dd className="text-xl font-semibold text-white">
                 {formatMonthlyTotal(quote.monthlyPrice, quote.isMonthlyFrom)}
               </dd>
             </div>
@@ -80,7 +80,7 @@ export default async function PortalHomePage() {
 
       <section>
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold tracking-tight">
+          <h2 className="text-lg font-semibold tracking-tight text-white">
             Tus productos
           </h2>
           <Link
@@ -92,7 +92,7 @@ export default async function PortalHomePage() {
         </div>
 
         {products.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-dashed border-border bg-background p-8 text-center">
+          <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-card p-8 text-center">
             <p className="text-muted-foreground">
               Aún no tienes productos en tu solución.
             </p>
@@ -109,7 +109,7 @@ export default async function PortalHomePage() {
               <Link
                 key={entitlement.id}
                 href={`/portal/productos/${product.id}`}
-                className="group rounded-2xl border border-border bg-background p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                className="group rounded-2xl border border-white/8 bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(19,200,236,0.12)]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -117,7 +117,7 @@ export default async function PortalHomePage() {
                   </span>
                   <StatusBadge status={entitlement.status} />
                 </div>
-                <h3 className="mt-4 font-semibold tracking-tight group-hover:text-primary">
+                <h3 className="mt-4 font-semibold tracking-tight text-white group-hover:text-primary">
                   {product.name}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">

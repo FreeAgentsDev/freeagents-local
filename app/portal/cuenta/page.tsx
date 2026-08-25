@@ -19,18 +19,18 @@ export default async function PortalAccountPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Cuenta</h1>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-white">Cuenta</h1>
         <p className="mt-1 text-muted-foreground">
           Datos de tu negocio y de las personas con acceso al portal.
         </p>
       </div>
 
-      <section className="rounded-2xl border border-border bg-background p-6 shadow-sm">
-        <h2 className="font-semibold tracking-tight">Negocio</h2>
+      <section className="rounded-2xl border border-white/8 bg-card p-6">
+        <h2 className="font-semibold tracking-tight text-white">Negocio</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <dt className="text-sm text-muted-foreground">Nombre</dt>
-            <dd className="font-medium">{organization.name}</dd>
+            <dd className="font-medium text-white">{organization.name}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Ciudad</dt>
@@ -53,8 +53,8 @@ export default async function PortalAccountPage() {
         </dl>
       </section>
 
-      <section className="rounded-2xl border border-border bg-background p-6 shadow-sm">
-        <h2 className="font-semibold tracking-tight">Personas con acceso</h2>
+      <section className="rounded-2xl border border-white/8 bg-card p-6">
+        <h2 className="font-semibold tracking-tight text-white">Personas con acceso</h2>
         <ul className="mt-4 divide-y divide-border">
           {members.map((member) => (
             <li
@@ -62,7 +62,7 @@ export default async function PortalAccountPage() {
               className="flex items-center justify-between gap-4 py-3"
             >
               <div>
-                <p className="font-medium">{member.name}</p>
+                <p className="font-medium text-white">{member.name}</p>
                 <p className="text-sm text-muted-foreground">{member.email}</p>
               </div>
               <span className="text-sm text-muted-foreground">

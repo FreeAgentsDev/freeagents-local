@@ -30,14 +30,14 @@ export default async function PortalProductsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Mis productos</h1>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-white">Mis productos</h1>
         <p className="mt-1 text-muted-foreground">
           Los productos de tu solución y el estado de activación de cada uno.
         </p>
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-background p-8 text-center">
+        <div className="rounded-2xl border border-dashed border-white/15 bg-card p-8 text-center">
           <p className="text-muted-foreground">
             Aún no tienes productos. Arma tu solución en el catálogo.
           </p>
@@ -54,7 +54,7 @@ export default async function PortalProductsPage() {
             <Link
               key={entitlement.id}
               href={`/portal/productos/${product.id}`}
-              className="group rounded-2xl border border-border bg-background p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+              className="group rounded-2xl border border-white/8 bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(19,200,236,0.12)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -62,7 +62,7 @@ export default async function PortalProductsPage() {
                 </span>
                 <StatusBadge status={entitlement.status} />
               </div>
-              <h3 className="mt-4 font-semibold tracking-tight group-hover:text-primary">
+              <h3 className="mt-4 font-semibold tracking-tight text-white group-hover:text-primary">
                 {product.name}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">

@@ -44,7 +44,7 @@ export function PackageSelector() {
                 "hover:border-primary/40 hover:shadow-md",
                 "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
                 selected
-                  ? "border-primary bg-accent/70 ring-2 ring-primary/20"
+                  ? "border-primary bg-accent/70 ring-2 ring-primary/25 shadow-[0_0_24px_rgba(19,200,236,0.12)]"
                   : "border-border",
               )}
             >

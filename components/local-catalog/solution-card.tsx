@@ -31,7 +31,7 @@ export function SolutionCard({
       className={cn(
         "flex h-full flex-col rounded-xl border bg-card shadow-sm transition-all duration-200",
         selected
-          ? "border-primary bg-accent/70 ring-2 ring-primary/20"
+          ? "border-primary bg-accent/70 ring-2 ring-primary/25 shadow-[0_0_24px_rgba(19,200,236,0.12)]"
           : "border-border",
       )}
     >

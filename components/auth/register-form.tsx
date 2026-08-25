@@ -109,8 +109,8 @@ export function RegisterForm() {
 
   return (
     <div className="grid w-full max-w-4xl gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-      <div className="rounded-2xl border border-border bg-background p-6 shadow-sm">
-        <h1 className="text-xl font-semibold tracking-tight">
+      <div className="rounded-2xl border border-white/8 bg-card p-6 shadow-[0_0_30px_rgba(19,200,236,0.08)]">
+        <h1 className="font-heading text-xl font-black tracking-tight text-white">
           Crea tu cuenta
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -224,7 +224,7 @@ export function RegisterForm() {
         </p>
       </div>
 
-      <aside className="h-fit rounded-2xl border border-border bg-background p-6 shadow-sm">
+      <aside className="h-fit rounded-2xl border border-white/8 bg-card p-6">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Tu solución
         </p>

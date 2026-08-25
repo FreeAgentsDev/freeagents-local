@@ -57,7 +57,7 @@ export default async function PortalProductPage({
             <CatalogIcon name={product.icon} className="size-6" />
           </span>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-heading text-3xl font-black tracking-tight text-white">
               {product.name}
             </h1>
             <p className="text-muted-foreground">{product.blurb}</p>
@@ -67,7 +67,7 @@ export default async function PortalProductPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <section className="rounded-2xl border border-border bg-background p-6 shadow-sm">
+        <section className="rounded-2xl border border-white/8 bg-card p-6">
           <h2 className="font-semibold tracking-tight">Activación</h2>
           {onboarding.length > 0 ? (
             <>
@@ -81,7 +81,7 @@ export default async function PortalProductPage({
                     <span
                       className={
                         item.done
-                          ? "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs text-emerald-700"
+                          ? "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-xs text-emerald-300"
                           : "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-border text-xs text-muted-foreground"
                       }
                     >
@@ -106,7 +106,7 @@ export default async function PortalProductPage({
         </section>
 
         <aside className="space-y-6">
-          <section className="rounded-2xl border border-border bg-background p-6 shadow-sm">
+          <section className="rounded-2xl border border-white/8 bg-card p-6">
             <h2 className="font-semibold tracking-tight">Qué incluye</h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {solution.features.map((feature) => (

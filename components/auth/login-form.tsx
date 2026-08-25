@@ -49,8 +49,8 @@ function LoginFormInner() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-sm">
-      <h1 className="text-xl font-semibold tracking-tight">Entrar</h1>
+    <div className="w-full max-w-sm rounded-2xl border border-white/8 bg-card p-6 shadow-[0_0_30px_rgba(19,200,236,0.08)]">
+      <h1 className="font-heading text-xl font-black tracking-tight text-white">Entrar</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Accede al portal de tu negocio.
       </p>

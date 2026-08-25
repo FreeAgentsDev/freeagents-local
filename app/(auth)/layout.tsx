@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 
 export default function AuthLayout({
   children,
@@ -6,17 +6,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col bg-[linear-gradient(to_bottom,#fafafa,#f4f4f5)]">
-      <header className="border-b border-border/80 bg-background/90">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center px-4">
-          <Link href="/catalogo" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
-              FA
-            </span>
-            <span className="text-sm font-semibold tracking-tight">
-              FreeAgents Local
-            </span>
-          </Link>
+    <div className="flex min-h-svh flex-col">
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center px-4">
+          <BrandMark />
         </div>
       </header>
       <main className="flex flex-1 items-start justify-center px-4 py-10">

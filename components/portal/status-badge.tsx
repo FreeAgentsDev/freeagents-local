@@ -4,19 +4,19 @@ import { cn } from "@/lib/utils";
 const STATUS_COPY: Record<string, { label: string; className: string }> = {
   pending: {
     label: "Por activar",
-    className: "bg-amber-100 text-amber-800 border-amber-200",
+    className: "border-amber-400/25 bg-amber-400/10 text-amber-200",
   },
   provisioning: {
     label: "En activación",
-    className: "bg-blue-100 text-blue-800 border-blue-200",
+    className: "border-primary/30 bg-primary/10 text-primary",
   },
   active: {
     label: "Activo",
-    className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    className: "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
   },
   paused: {
     label: "Pausado",
-    className: "bg-zinc-100 text-zinc-600 border-zinc-200",
+    className: "border-white/10 bg-white/5 text-slate-400",
   },
 };
 

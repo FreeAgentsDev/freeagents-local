@@ -8,12 +8,12 @@ export function CatalogHero() {
 
   return (
     <section className="relative overflow-hidden px-4 pt-14 pb-10 sm:pt-20 sm:pb-14">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(124,58,237,0.12),_transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(19,200,236,0.14),_transparent_55%)]" />
       <div className="relative mx-auto max-w-3xl text-center">
-        <p className="mb-4 text-xs font-medium tracking-wide text-primary uppercase">
+        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-widest text-primary uppercase">
           FreeAgents Local
         </p>
-        <h1 className="font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+        <h1 className="font-heading text-4xl font-black tracking-tight text-balance text-white sm:text-5xl md:text-6xl">
           Construye la tecnología que tu negocio necesita.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg">

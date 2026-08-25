@@ -63,9 +63,9 @@ export function FinalCta() {
   return (
     <section
       id="contacto"
-      className="scroll-mt-24 rounded-2xl bg-[radial-gradient(ellipse_at_top,_rgba(124,58,237,0.12),_transparent_60%)] px-5 py-10 text-center sm:px-8"
+      className="scroll-mt-24 rounded-2xl border border-white/8 bg-card/60 bg-[radial-gradient(ellipse_at_top,_rgba(19,200,236,0.12),_transparent_60%)] px-5 py-10 text-center sm:px-8"
     >
-      <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance">
+      <h2 className="font-heading text-3xl font-black tracking-tight text-balance text-white">
         ¿Quieres construir esto para tu negocio?
       </h2>
       <p className="mx-auto mt-3 max-w-xl text-muted-foreground">

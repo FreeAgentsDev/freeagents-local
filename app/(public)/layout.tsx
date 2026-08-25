@@ -9,7 +9,7 @@ export default function PublicLayout({
 }) {
   return (
     <CatalogProvider>
-      <div className="flex min-h-svh flex-col overflow-x-hidden bg-[linear-gradient(to_bottom,#fafafa,#f4f4f5)]">
+      <div className="flex min-h-svh flex-col overflow-x-hidden">
         <PublicHeader />
         <main id="contenido" className="flex-1">
           {children}
