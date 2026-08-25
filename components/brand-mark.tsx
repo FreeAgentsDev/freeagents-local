@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -16,12 +17,17 @@ export function BrandMark({
   return (
     <Link
       href={href}
-      className={cn("flex items-center gap-2.5", className)}
+      className={cn("group flex items-center gap-2.5", className)}
       aria-label={label}
     >
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[11px] font-black tracking-tight text-primary ring-2 ring-primary/25">
-        FA
-      </span>
+      <Image
+        src="/fa-logo.png"
+        alt="FreeAgents"
+        width={36}
+        height={36}
+        className="size-9 shrink-0 rounded-full object-cover ring-2 ring-primary/20 transition-all group-hover:ring-primary/50"
+        priority
+      />
       <span className="text-sm font-black tracking-tight text-white">
         Free<span className="text-primary">Agents</span>
       </span>

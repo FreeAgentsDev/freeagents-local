@@ -24,6 +24,10 @@ export const metadata: Metadata = {
   },
   description:
     "Arma la solución digital de tu negocio local: catálogo, precios claros y tu portal de cliente.",
+  icons: {
+    icon: "/fa-logo.png",
+    apple: "/fa-logo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
