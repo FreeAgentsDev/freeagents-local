@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Space_Grotesk } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
+import { getAppUrl } from "@/lib/config/site";
 
 import "./globals.css";
 
@@ -16,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getAppUrl()),
   title: {
     default: "FreeAgents Local",
     template: "%s · FreeAgents Local",

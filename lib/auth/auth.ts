@@ -2,12 +2,14 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
+import { getAppUrl, getTrustedOrigins } from "@/lib/config/site";
 import { db } from "@/lib/db";
 import { account, session, user, verification } from "@/lib/db/schema";
 
 export const auth = betterAuth({
-  baseURL: process.env.APP_URL ?? "http://localhost:3000",
+  baseURL: getAppUrl(),
   secret: process.env.AUTH_SECRET,
+  trustedOrigins: getTrustedOrigins(),
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { user, session, account, verification },

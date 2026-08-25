@@ -55,9 +55,43 @@ AUTH_SECRET=$(openssl rand -base64 32) docker compose up --build
 | --- | --- |
 | `DATABASE_URL` | Conexión Postgres |
 | `AUTH_SECRET` | Secreto de sesiones (`openssl rand -base64 32`) |
-| `APP_URL` | URL pública de la app |
+| `APP_URL` | URL pública de la app (`https://local.freeagentsdev.com` en producción) |
 | `CRM_WEBHOOK_URL` | (Opcional) endpoint del CRM para leads/registros |
 | `CRM_WEBHOOK_SECRET` | (Opcional) secreto compartido del webhook |
+
+## Dominio y Vercel
+
+El apex **`freeagentsdev.com`** sigue en la landing. Este sistema usa el subdominio:
+
+**https://local.freeagentsdev.com**
+
+### 1. Proyecto en Vercel
+
+Importa `FreeAgentsDev/freeagents-local`. En Environment Variables (Production):
+
+| Variable | Valor |
+| --- | --- |
+| `DATABASE_URL` | Postgres de producción (Neon, Railway, etc.) |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `APP_URL` | `https://local.freeagentsdev.com` |
+
+Vercel no incluye Postgres. Crea una base (Neon es la opción más liviana) y corre `npm run db:migrate` contra esa URL antes de abrir el portal.
+
+### 2. Dominio en Vercel
+
+En el proyecto: **Settings → Domains → Add** → `local.freeagentsdev.com`.
+
+### 3. DNS en Namecheap
+
+En el dominio `freeagentsdev.com` (Advanced DNS), **no toques** los records del apex que ya usa la landing. Agrega solo:
+
+| Type | Host | Value | TTL |
+| --- | --- | --- | --- |
+| CNAME | `local` | `cname.vercel-dns.com.` | Automatic |
+
+Si Namecheap pide un target sin punto final, usa `cname.vercel-dns.com`.
+
+Cuando Vercel marque el dominio como *Valid*, catálogo = `https://local.freeagentsdev.com/catalogo` y portal = `https://local.freeagentsdev.com/portal`. La landing de producción ya apunta a ese host.
 
 ## Scripts
 
