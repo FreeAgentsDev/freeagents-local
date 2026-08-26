@@ -1,17 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useCatalog } from "@/components/local-catalog/catalog-provider";
+import { authClient } from "@/lib/auth/client";
 import { track } from "@/lib/local-catalog/analytics";
 import { CATALOG_CONTACT } from "@/lib/local-catalog/catalog";
 import { buildLeadPayload, buildWhatsAppText } from "@/lib/local-catalog/lead-payload";
-import { saveCatalogSnapshot } from "@/lib/local-catalog/snapshot";
+import {
+  clearCatalogSnapshot,
+  saveCatalogSnapshot,
+} from "@/lib/local-catalog/snapshot";
+import { applyCatalogSnapshot } from "@/lib/registration/actions";
 import { cn } from "@/lib/utils";
 
 export function FinalCta() {
   const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const [activating, setActivating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const {
     openLead,
     businessTypeId,
@@ -21,15 +31,40 @@ export function FinalCta() {
     result,
   } = useCatalog();
 
-  function handleRegister() {
-    saveCatalogSnapshot({
+  async function handleRegister() {
+    const snapshot = {
       businessType: businessTypeId,
       goals: selectedGoals,
       solutions: selectedSolutions,
       metrics,
-      sourceCta: "register",
-    });
+      sourceCta: "register" as const,
+    };
+    saveCatalogSnapshot(snapshot);
     track("cta_clicked", { cta: "register" });
+    setError(null);
+
+    if (session) {
+      setActivating(true);
+      try {
+        const applied = await applyCatalogSnapshot({ snapshot });
+        if (applied.ok) {
+          clearCatalogSnapshot();
+          toast.success("Tu solución quedó en tu portal.");
+          router.push("/portal");
+          router.refresh();
+          return;
+        }
+        if (applied.code === "NO_ORG" || applied.code === "NO_SESSION") {
+          router.push("/register");
+          return;
+        }
+        setError(applied.error);
+      } finally {
+        setActivating(false);
+      }
+      return;
+    }
+
     router.push("/register");
   }
 
@@ -73,8 +108,16 @@ export function FinalCta() {
         en una solución real.
       </p>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
-        <Button className="h-12 w-full px-5 sm:w-auto" onClick={handleRegister}>
-          Crear mi cuenta con esta solución
+        <Button
+          className="h-12 w-full px-5 sm:w-auto"
+          onClick={handleRegister}
+          disabled={activating}
+        >
+          {activating
+            ? "Activando…"
+            : session
+              ? "Activar esta solución en mi cuenta"
+              : "Crear mi cuenta con esta solución"}
         </Button>
         {CATALOG_CONTACT.whatsappUrl ? (
           <a
@@ -106,6 +149,11 @@ export function FinalCta() {
           Agendar una llamada
         </Button>
       </div>
+      {error ? (
+        <p className="mt-4 text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 }

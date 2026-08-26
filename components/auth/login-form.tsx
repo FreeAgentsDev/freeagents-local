@@ -12,6 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/client";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import {
+  clearCatalogSnapshot,
+  loadCatalogSnapshot,
+} from "@/lib/local-catalog/snapshot";
+import { applyCatalogSnapshot } from "@/lib/registration/actions";
 
 export function LoginForm() {
   return (
@@ -44,6 +49,27 @@ function LoginFormInner() {
     }
 
     const next = searchParams.get("next");
+
+    const snapshot = loadCatalogSnapshot();
+    if (snapshot && snapshot.solutions.length > 0) {
+      const applied = await applyCatalogSnapshot({
+        snapshot: {
+          businessType: snapshot.businessType,
+          goals: snapshot.goals,
+          solutions: snapshot.solutions,
+          metrics: snapshot.metrics,
+          sourceCta: snapshot.sourceCta,
+        },
+      });
+      if (applied.ok) {
+        clearCatalogSnapshot();
+      } else if (applied.code === "NO_ORG") {
+        router.push("/register");
+        router.refresh();
+        return;
+      }
+    }
+
     router.push(next && next.startsWith("/") ? next : "/portal");
     router.refresh();
   }

@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth/auth";
@@ -27,29 +28,39 @@ import { getProductModule, isProductId } from "@/lib/products/registry";
 import { BUSINESS_TYPES } from "@/lib/local-catalog/data/business-types";
 import { GOALS } from "@/lib/local-catalog/data/goals";
 
+const snapshotSchema = z.object({
+  businessType: z.string().nullable(),
+  goals: z.array(z.string()),
+  solutions: z.array(z.string()),
+  metrics: z.object({
+    monthlyClientsRange: z.string().nullable(),
+    averageTicket: z.number().nullable(),
+    weeklyAdminHoursRange: z.string().nullable(),
+    hourlyValue: z.number().nullable(),
+  }),
+  sourceCta: z.string(),
+});
+
 const completeRegistrationSchema = z.object({
   business: z.string().min(2).max(120),
   city: z.string().min(2).max(80),
   whatsapp: z.string().min(7).max(20),
-  snapshot: z
-    .object({
-      businessType: z.string().nullable(),
-      goals: z.array(z.string()),
-      solutions: z.array(z.string()),
-      metrics: z.object({
-        monthlyClientsRange: z.string().nullable(),
-        averageTicket: z.number().nullable(),
-        weeklyAdminHoursRange: z.string().nullable(),
-        hourlyValue: z.number().nullable(),
-      }),
-      sourceCta: z.string(),
-    })
-    .nullable(),
+  snapshot: snapshotSchema.nullable(),
 });
 
 export type CompleteRegistrationInput = z.infer<
   typeof completeRegistrationSchema
 >;
+
+export type CatalogSnapshotInput = z.infer<typeof snapshotSchema>;
+
+type SanitizedSnapshot = {
+  businessType: BusinessTypeId | null;
+  goals: GoalId[];
+  solutions: SolutionId[];
+  metrics: BusinessMetrics;
+  sourceCta: string;
+};
 
 function slugify(value: string): string {
   return value
@@ -77,6 +88,178 @@ function sanitizeSolutions(values: string[]): SolutionId[] {
   return values.filter((value): value is SolutionId => isProductId(value));
 }
 
+function sanitizeSnapshot(
+  snapshot: CatalogSnapshotInput | null,
+): SanitizedSnapshot {
+  if (!snapshot) {
+    return {
+      businessType: null,
+      goals: [],
+      solutions: [],
+      metrics: { ...EMPTY_METRICS },
+      sourceCta: "register",
+    };
+  }
+
+  return {
+    businessType: sanitizeBusinessType(snapshot.businessType),
+    goals: sanitizeGoals(snapshot.goals),
+    solutions: sanitizeSolutions(snapshot.solutions),
+    metrics: {
+      monthlyClientsRange:
+        (snapshot.metrics.monthlyClientsRange as BusinessMetrics["monthlyClientsRange"]) ??
+        null,
+      averageTicket: snapshot.metrics.averageTicket,
+      weeklyAdminHoursRange:
+        (snapshot.metrics.weeklyAdminHoursRange as BusinessMetrics["weeklyAdminHoursRange"]) ??
+        null,
+      hourlyValue: snapshot.metrics.hourlyValue,
+    },
+    sourceCta: snapshot.sourceCta || "register",
+  };
+}
+
+type QueryClient = {
+  insert: typeof db.insert;
+  select: typeof db.select;
+};
+
+async function provisionSolutions(
+  tx: QueryClient,
+  organizationId: string,
+  snapshot: SanitizedSnapshot,
+) {
+  const result = calculateSolution({
+    businessType: snapshot.businessType,
+    selectedGoals: snapshot.goals,
+    selectedSolutions: snapshot.solutions,
+    metrics: snapshot.metrics,
+  });
+
+  if (snapshot.solutions.length === 0) {
+    return { added: 0, result };
+  }
+
+  const existing = await tx
+    .select({ productId: entitlements.productId })
+    .from(entitlements)
+    .where(eq(entitlements.organizationId, organizationId));
+  const alreadyHave = new Set(existing.map((row) => row.productId));
+  const toAdd = snapshot.solutions.filter((id) => !alreadyHave.has(id));
+
+  if (toAdd.length === 0) {
+    return { added: 0, result };
+  }
+
+  const [quote] = await tx
+    .insert(catalogQuotes)
+    .values({
+      organizationId,
+      snapshot: {
+        businessType: snapshot.businessType,
+        goals: snapshot.goals,
+        solutions: snapshot.solutions,
+        metrics: snapshot.metrics,
+        estimates: {
+          recoverableRevenue: result.impact.recoverableRevenue,
+          timeValuePerMonth: result.impact.timeValuePerMonth,
+          paybackMonths: result.paybackMonths,
+        },
+      },
+      setupPrice: result.setupPrice,
+      monthlyPrice: result.monthlyPrice,
+      isSetupFrom: result.isSetupFrom,
+      isMonthlyFrom: result.isMonthlyFrom,
+      sourceCta: snapshot.sourceCta,
+    })
+    .returning({ id: catalogQuotes.id });
+
+  for (const solutionId of toAdd) {
+    const productModule = getProductModule(solutionId);
+    const status = await productModule.provision();
+
+    const [entitlement] = await tx
+      .insert(entitlements)
+      .values({
+        organizationId,
+        productId: solutionId,
+        status,
+        quoteId: quote.id,
+      })
+      .returning({ id: entitlements.id });
+
+    if (productModule.product.onboarding.length > 0) {
+      await tx.insert(onboardingItems).values(
+        productModule.product.onboarding.map((title, index) => ({
+          entitlementId: entitlement.id,
+          title,
+          position: index,
+        })),
+      );
+    }
+  }
+
+  return { added: toAdd.length, result };
+}
+
+export async function applyCatalogSnapshot(input: {
+  snapshot: CatalogSnapshotInput;
+}): Promise<
+  | { ok: true; added: number }
+  | { ok: false; error: string; code?: "NO_SESSION" | "NO_ORG" }
+> {
+  const parsed = snapshotSchema.safeParse(input.snapshot);
+  if (!parsed.success) {
+    return { ok: false, error: "La solución no es válida. Ármala de nuevo en el catálogo." };
+  }
+
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return {
+      ok: false,
+      error: "Inicia sesión para activar esta solución.",
+      code: "NO_SESSION",
+    };
+  }
+
+  const membership = await getUserOrganization(session.user.id);
+  if (!membership) {
+    return {
+      ok: false,
+      error: "Termina de crear tu negocio para activar la solución.",
+      code: "NO_ORG",
+    };
+  }
+
+  const snapshot = sanitizeSnapshot(parsed.data);
+  if (snapshot.solutions.length === 0) {
+    return {
+      ok: false,
+      error: "Selecciona al menos una solución en el catálogo.",
+    };
+  }
+
+  const { added, result } = await db.transaction(async (tx) =>
+    provisionSolutions(tx, membership.organization.id, snapshot),
+  );
+
+  if (added > 0) {
+    void notifyCrm("client_registered", {
+      organizationId: membership.organization.id,
+      business: membership.organization.name,
+      city: membership.organization.city,
+      whatsapp: membership.organization.whatsapp,
+      email: session.user.email,
+      name: session.user.name,
+      solutions: snapshot.solutions,
+      setupPrice: result.setupPrice,
+      monthlyPrice: result.monthlyPrice,
+    });
+  }
+
+  return { ok: true, added };
+}
+
 export async function completeRegistration(
   input: CompleteRegistrationInput,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -90,40 +273,25 @@ export async function completeRegistration(
     return { ok: false, error: "Tu sesión expiró. Inicia sesión de nuevo." };
   }
 
+  const snapshot = sanitizeSnapshot(parsed.data.snapshot);
+  const result = calculateSolution({
+    businessType: snapshot.businessType,
+    selectedGoals: snapshot.goals,
+    selectedSolutions: snapshot.solutions,
+    metrics: snapshot.metrics,
+  });
+
   const existing = await getUserOrganization(session.user.id);
   if (existing) {
-    // Already registered (e.g. retry after a partial failure): nothing to do.
+    if (snapshot.solutions.length > 0) {
+      await db.transaction(async (tx) =>
+        provisionSolutions(tx, existing.organization.id, snapshot),
+      );
+    }
     return { ok: true };
   }
 
-  const { business, city, whatsapp, snapshot } = parsed.data;
-
-  const businessType = snapshot
-    ? sanitizeBusinessType(snapshot.businessType)
-    : null;
-  const goals = snapshot ? sanitizeGoals(snapshot.goals) : [];
-  const solutions = snapshot ? sanitizeSolutions(snapshot.solutions) : [];
-  const metrics: BusinessMetrics = snapshot
-    ? {
-        monthlyClientsRange:
-          (snapshot.metrics.monthlyClientsRange as BusinessMetrics["monthlyClientsRange"]) ??
-          null,
-        averageTicket: snapshot.metrics.averageTicket,
-        weeklyAdminHoursRange:
-          (snapshot.metrics.weeklyAdminHoursRange as BusinessMetrics["weeklyAdminHoursRange"]) ??
-          null,
-        hourlyValue: snapshot.metrics.hourlyValue,
-      }
-    : { ...EMPTY_METRICS };
-
-  // Pricing is always recomputed server-side from the catalog source of truth.
-  const result = calculateSolution({
-    businessType,
-    selectedGoals: goals,
-    selectedSolutions: solutions,
-    metrics,
-  });
-
+  const { business, city, whatsapp } = parsed.data;
   const baseSlug = slugify(business) || "negocio";
 
   const organizationId = await db.transaction(async (tx) => {
@@ -138,7 +306,7 @@ export async function completeRegistration(
           .values({
             name: business,
             slug,
-            businessType,
+            businessType: snapshot.businessType,
             city,
             whatsapp,
           })
@@ -159,55 +327,7 @@ export async function completeRegistration(
       role: "owner",
     });
 
-    if (solutions.length > 0) {
-      const [quote] = await tx
-        .insert(catalogQuotes)
-        .values({
-          organizationId: created.id,
-          snapshot: {
-            businessType,
-            goals,
-            solutions,
-            metrics,
-            estimates: {
-              recoverableRevenue: result.impact.recoverableRevenue,
-              timeValuePerMonth: result.impact.timeValuePerMonth,
-              paybackMonths: result.paybackMonths,
-            },
-          },
-          setupPrice: result.setupPrice,
-          monthlyPrice: result.monthlyPrice,
-          isSetupFrom: result.isSetupFrom,
-          isMonthlyFrom: result.isMonthlyFrom,
-          sourceCta: snapshot?.sourceCta ?? "register",
-        })
-        .returning({ id: catalogQuotes.id });
-
-      for (const solutionId of solutions) {
-        const productModule = getProductModule(solutionId);
-        const status = await productModule.provision();
-
-        const [entitlement] = await tx
-          .insert(entitlements)
-          .values({
-            organizationId: created.id,
-            productId: solutionId,
-            status,
-            quoteId: quote.id,
-          })
-          .returning({ id: entitlements.id });
-
-        if (productModule.product.onboarding.length > 0) {
-          await tx.insert(onboardingItems).values(
-            productModule.product.onboarding.map((title, index) => ({
-              entitlementId: entitlement.id,
-              title,
-              position: index,
-            })),
-          );
-        }
-      }
-    }
+    await provisionSolutions(tx, created.id, snapshot);
 
     return created.id;
   });
@@ -219,7 +339,7 @@ export async function completeRegistration(
     whatsapp,
     email: session.user.email,
     name: session.user.name,
-    solutions,
+    solutions: snapshot.solutions,
     setupPrice: result.setupPrice,
     monthlyPrice: result.monthlyPrice,
   });
