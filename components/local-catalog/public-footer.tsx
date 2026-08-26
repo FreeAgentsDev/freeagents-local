@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import faLogo from "@/assets/brand/fa-logo.png";
 import { buttonVariants } from "@/components/ui/button";
 import { useCatalog } from "@/components/local-catalog/catalog-provider";
 import { CATALOG_CONTACT } from "@/lib/local-catalog/catalog";
@@ -15,7 +16,7 @@ export function PublicFooter() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-8 pb-24 sm:flex-row sm:items-center sm:justify-between lg:pb-8">
         <p className="flex items-center gap-2.5 text-sm text-muted-foreground">
           <Image
-            src="/fa-logo.png"
+            src={faLogo}
             alt=""
             width={32}
             height={32}

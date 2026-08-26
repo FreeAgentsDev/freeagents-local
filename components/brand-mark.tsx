@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import faLogo from "@/assets/brand/fa-logo.png";
 import { cn } from "@/lib/utils";
 
 type BrandMarkProps = {
@@ -21,7 +22,7 @@ export function BrandMark({
       aria-label={label}
     >
       <Image
-        src="/fa-logo.png"
+        src={faLogo}
         alt="FreeAgents"
         width={36}
         height={36}
